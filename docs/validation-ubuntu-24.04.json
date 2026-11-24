@@ -1,0 +1,274 @@
+{
+  "started_utc": "2026-11-19T07:36:06.729635+00:00",
+  "platform": "PRETTY_NAME=\"Ubuntu 24.04.5 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"24.04\"\nVERSION=\"24.04.5 LTS (Noble Numbat)\"\nVERSION_CODENAME=noble\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nUBUNTU_CODENAME=noble\nLOGO=ubuntu-logo\n",
+  "kernel": "6.8.0-147-generic",
+  "checks": [
+    {
+      "name": "IPv4 TCP 18080 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv4 TCP 18081 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv4 UDP 18082 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv4 UDP 18083 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv6 TCP 18080 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv6 TCP 18081 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv6 UDP 18082 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv6 UDP 18083 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv4 TCP 18080 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv4 TCP 18081 blocked",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv4 UDP 18082 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv4 UDP 18083 blocked",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv6 TCP 18080 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv6 TCP 18081 blocked",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv6 UDP 18082 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv6 UDP 18083 blocked",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv4 fresh authenticated SSH survives allowlist",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "IPv6 fresh authenticated SSH survives allowlist",
+      "passed": true,
+      "detail": ""
+    },
+    {
+      "name": "KEEP commits real nftables policy",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unrelated nftables table survives apply",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Manual restore recreates previous dedicated table",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv4 TCP 18080 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv4 TCP 18081 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv4 UDP 18082 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv4 UDP 18083 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv6 TCP 18080 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv6 TCP 18081 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv6 UDP 18082 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv6 UDP 18083 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv4 TCP 18081 blocked",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Real systemd rollback timer is armed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "SIGKILL leaves pending recovery for the detached timer",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv4 TCP 18081 blocked",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Detached systemd timer restores after main process SIGKILL",
+      "passed": true,
+      "detail": {
+        "seconds_after_sigkill": 119.47,
+        "unit": "ctf-defend-rollback-20261119T073715Z-RiyY2Aag"
+      }
+    },
+    {
+      "name": "IPv4 TCP 18080 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv4 TCP 18081 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv4 UDP 18082 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv4 UDP 18083 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv6 TCP 18080 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv6 TCP 18081 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv6 UDP 18082 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "IPv6 UDP 18083 allowed",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Unrelated nftables table survives timed recovery",
+      "passed": true,
+      "detail": null
+    },
+    {
+      "name": "Rollback service exits successfully",
+      "passed": true,
+      "detail": "Result=success\nExecMainStatus=0"
+    }
+  ],
+  "status": "passed",
+  "nftables": "nftables v1.0.9 (Old Doc Yak #3)",
+  "systemd": "systemd 255 (255.4-1ubuntu8.18)",
+  "finished_utc": "2026-11-19T07:39:28.220130+00:00",
+  "project_version": "1.2.0",
+  "isolated_checks_passed": 160,
+  "live_packet_timer_checks_passed": 44,
+  "live_audit_service_checks": [
+    {
+      "name": "real vsftpd anonymous access is detected",
+      "passed": true
+    },
+    {
+      "name": "real vsftpd rejection is distinguished from an unavailable listener",
+      "passed": true
+    },
+    {
+      "name": "live SUID inventory finds the fixture without changing its mode",
+      "passed": true
+    },
+    {
+      "name": "live authorized_keys inventory reports counts and fingerprints",
+      "passed": true
+    },
+    {
+      "name": "real SSH reload and kernel hardening complete",
+      "passed": true
+    },
+    {
+      "name": "hardening restoration recovers the SSH file and live kernel value",
+      "passed": true
+    }
+  ],
+  "total_live_checks_passed": 50,
+  "image_sha256": "04e8f2461a16a44e78a370284471f29616cdd9baf1893df25807b71f985b6c94",
+  "emulator": "QEMU 7.2.22, TCG, 2 vCPUs, 2 GiB RAM",
+  "validation_date_local": "2026-11-18",
+  "limits": [
+    "Ubuntu 24.04.5 LTS only; Kali and other distributions were not live-tested.",
+    "Firewall is host INPUT only and runtime-only; forwarded/Docker traffic needs separate policy.",
+    "Anonymous FTP probe covers loopback TCP 21; custom ports/bindings/FTPS require separate review.",
+    "SUID/SGID root-filesystem scan is bounded and excludes other mounts.",
+    "Authorized-key checks cover conventional local-account paths; custom key commands/paths require separate review."
+  ]
+}
