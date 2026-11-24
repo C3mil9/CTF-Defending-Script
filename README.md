@@ -1,6 +1,27 @@
 # CTF Defense Kit
 
-A Bash helper for defending your team's Linux VMs in attack/defense cybersecurity competitions. It creates an audit report, applies a small hardening baseline, changes selected local passwords, and builds a host firewall around the ports your services need.
+```text
+      /
+     /\     ___
+    /  \   \\\\\              __________
+   |    \ /O )))        _--~~~ ________/
+   |     \ |=  /     _-~__--~~~ _____/
+   |_____ \_|_|___ /  ____---~~~~__/
+<--E---<<</E______)  ______---~~_/
+   |~~~~~~/|    | |  _______--_/
+   |     / |    |  \  ____--_/  ____
+   |    / /      ---)      /--.==\\\\
+    \  / |          ~~~--~/   )  ))))
+     \/   |                    |  ((((
+      \ _-~\|  /     _____\   /   )))
+       ( ---| /--~~~~  \ \v\ (    (((
+       ||   ||          \ > \ >    ((
+       ||_  (|          //  ||      ))
+        \_| ||         //   ||
+           /_|        /_|  /_|
+```
+
+A modular Bash helper for defending your team's Linux VMs in attack/defense cybersecurity competitions. It creates an audit report, applies a small hardening baseline, changes selected local passwords, and builds a host firewall around the ports your services need.
 
 **Start with `audit`. Read the competition service list before applying changes.** Run the script inside each assigned Linux guest. The firewall needs every scored TCP/UDP port and your actual SSH port.
 
@@ -8,13 +29,41 @@ A Bash helper for defending your team's Linux VMs in attack/defense cybersecurit
 
 | Command | What it does |
 | --- | --- |
-| `audit` | Reports listeners, running services, accounts, administrative groups, logins, firewall rules, cron file names, timers, and selected configuration hashes. |
+| `audit` | Reports host/service inventory, anonymous FTP exposure, SUID/SGID files, SSH authorized-key metadata, cron, timers, and selected configuration hashes. |
 | `harden` | Backs up configuration and live kernel values, applies supported hardening settings, validates SSH configuration, and reloads an active SSH service. |
 | `passwords` | Opens the normal hidden password prompt for explicitly named local accounts. |
 | `firewall` | Builds an IPv4/IPv6 nftables INPUT allowlist, with rollback on ordinary failure and a detached rollback timer. |
 | `restore` | Restores the configuration and live settings captured by a particular hardening or firewall run. |
 
 Hardening, password changes, firewall changes, and restoration **preview by default**. Add `--apply` to make changes. Audit writes only this tool's private report files.
+
+## Project structure
+
+Each feature has its own file. The small entry point loads the modules, validates arguments, and dispatches the selected command.
+
+| File | Responsibility |
+| --- | --- |
+| `ctf-defend.sh` | Resolve the project location, load modules, install recovery traps, and dispatch commands. |
+| `lib/banner.sh` | Literal ASCII artwork for the README and interactive terminal startup. |
+| `lib/cli.sh` | Built-in help, command selection, and option validation. |
+| `lib/common.sh` | Shared defaults, port validation, dependency checks, private backups, locks, and atomic file replacement. |
+| `lib/audit.sh` | Host inventory and private audit reports. |
+| `lib/audit_checks.sh` | Anonymous FTP probes, SUID/SGID inventory, and authorized-key metadata checks. |
+| `lib/harden.sh` | SSH candidates, kernel settings, validation, and application. |
+| `lib/passwords.sh` | Explicit local-account password changes through `passwd`. |
+| `lib/firewall.sh` | Port allowlists, SSH reachability checks, temporary application, and confirmation. |
+| `lib/restore.sh` | Hardening/firewall restoration, error cleanup, and the standalone rollback watchdog. |
+| `tests/test.sh` | Isolated regression tests using temporary files and mocked system commands. |
+| `tests/test-audit.sh` | Audit regression tests using private file fixtures and a mocked FTP client. |
+| `tests/lint.sh` | Lint the entry point, every library, and all shell tests as explicit inputs. |
+| `tests/live-vm.py` | Real IPv4/IPv6 packet filtering, SSH login, and detached systemd rollback checks in a disposable VM. |
+| `tests/live-audit-vm.sh` | Real vsftpd exposure/rejection checks, SUID/key inventory, SSH reload, and hardening restoration in a disposable VM. |
+
+**Keep the entire project folder together.** Run `ctf-defend.sh` to use the tool. Bash's `source` command loads the module functions into the main process; the files under `lib/` are helpers rather than separate command-line programs.
+
+Imports are resolved relative to the real entry point, so you can run it from another directory or through a symlink. A missing or unreadable module stops startup before any host configuration changes. Once armed, firewall recovery uses a self-contained script in the private backup directory and can recover even if the project folder is moved or deleted.
+
+The supplied ASCII artwork is printed before interactive commands. Redirected output stays suitable for reports and automated checks.
 
 ## Requirements
 
@@ -24,11 +73,12 @@ Hardening, password changes, firewall changes, and restoration **preview by defa
 - `nftables` and a running systemd service manager for firewall application.
 - An interactive terminal for applying firewall rules or changing passwords.
 - OpenSSH server for SSH hardening. Existing configuration and host keys must pass `sshd -t`.
+- `curl` enables the optional anonymous FTP probes; `ssh-keygen` enables key fingerprints. Missing tools produce an inconclusive result rather than a passing security finding.
 
 Most tools are already present on a full Linux VM. On Debian/Ubuntu/Kali, install missing dependencies before the round if your rules allow package installation:
 
 ```bash
-sudo apt-get install bash coreutils findutils grep gawk util-linux procps iproute2 nftables
+sudo apt-get install bash coreutils findutils grep gawk util-linux procps iproute2 nftables curl openssh-client
 ```
 
 The script checks requirements and runs locally. It does not download tools or install packages during execution. Run it on Linux; macOS's default Bash and Windows PowerShell are outside its target environment.
@@ -38,7 +88,7 @@ The script checks requirements and runs locally. It does not download tools or i
 From the repository directory:
 
 ```bash
-bash -n ctf-defend.sh
+bash tests/test.sh
 sudo bash ./ctf-defend.sh audit
 ```
 
@@ -59,6 +109,14 @@ sudo bash ./ctf-defend.sh passwords --users kali,root --apply
 ```
 
 `passwd` asks for each new password twice without displaying it. Coordinate unique passwords with your teammate through your team's private channel. Test a new login before closing your existing session. If one change fails, earlier successful changes remain in effect; password changes have no automatic rollback.
+
+### Audit exposure checks
+
+- **Anonymous FTP:** checks common vsftpd/ProFTPD configuration indicators and tries anonymous login plus a metadata-only request on IPv4/IPv6 loopback TCP 21. It disables curl configuration files and proxies, allows five seconds for connection/authentication, and caps each request at ten seconds. A successful login is flagged for review; rejected, unavailable, timed-out, and other failed checks are reported distinctly. Other listening addresses, custom ports, includes, and FTPS policies need manual review. Required anonymous service access may be intentional under competition rules.
+- **SUID/SGID:** inventories matching regular files on the root filesystem using `find -xdev`, with a 30-second limit. Review unexpected binaries, owners, or writable files. Files are listed rather than executed; other mounted filesystems require a separate scan. A timeout or permission error marks the result as potentially partial.
+- **SSH authorized keys:** checks conventional `.ssh/authorized_keys` and `authorized_keys2` locations for local passwd entries. It reports ownership, group/other write access, entry counts, and SHA-256 fingerprints. Key bodies, comments, and options are excluded. Symlinked paths are flagged and skipped; custom `AuthorizedKeysFile`, `AuthorizedKeysCommand`, and `Match` rules need separate review.
+
+These checks gather evidence. Review trust and scoring requirements before removing access or changing service policy.
 
 ### Firewall example: SSH + a website
 
@@ -187,30 +245,71 @@ Patching packages, changing database/application credentials, removing suspiciou
 ## Validation and testing
 
 ```bash
-bash -n ctf-defend.sh
+for file in ctf-defend.sh lib/*.sh tests/*.sh; do
+    bash -n "$file" || exit 1
+done
 bash tests/test.sh
 ```
 
-Tests use temporary files and mocked system commands. They cover argument validation, port ranges and injection rejection, preservation of stricter SSH limits, interface-specific redirect settings, managed-block idempotence, hardening restoration, firewall rollback, and pending-run protection. When the util-linux `script` command is available, they also exercise the complete firewall CLI in a pseudo-terminal: KEEP, revert, timer-arm failure, and nft application failure. They leave the test host's system configuration and firewall untouched.
+Tests use temporary files and mocked system commands. They cover argument validation, port ranges and injection rejection, preservation of stricter SSH limits, interface-specific redirect settings, managed-block idempotence, hardening restoration, firewall rollback, and pending-run protection. Module-loading checks cover a different working directory, a moved checkout with spaces in its path, a symlinked entry point, missing modules, and a watchdog running after the copied project's modules have been deleted.
 
-Optional static analysis:
+When the util-linux `script` command is available, the tests also exercise the complete firewall CLI in a pseudo-terminal: KEEP, revert, timer-arm failure, and nft application failure. They leave the test host's system configuration and firewall untouched.
+
+Static analysis (install ShellCheck first):
 
 ```bash
-shellcheck -x -P SCRIPTDIR ctf-defend.sh tests/test.sh
+bash tests/lint.sh
+# Equivalent explicit input list, including the libraries:
+shellcheck -x -P SCRIPTDIR ctf-defend.sh lib/*.sh tests/*.sh
 ```
 
-OpenSSH configuration validation was also checked with a disposable host key. Live packet filtering and real systemd timer execution require a disposable Linux VM; those integration checks have not been run for this release.
+The shared-state module disables only SC2034 because sibling modules consume its variables. Recovery-flag assignments have narrow cross-module annotations; other diagnostics remain enabled.
 
-## Files and publishing
+For the real packet and timer checks, use a fresh **disposable Linux VM**, with systemd as PID 1, OpenSSH server running, and Python 3, iproute2, and nftables installed:
+
+```bash
+sudo python3 tests/live-vm.py --disposable-vm --report /tmp/ctf-live-validation.json
+```
+
+This test changes VM networking and creates a temporary SSH account. It verifies actual TCP/UDP allow/deny behavior for IPv4/IPv6, new key-authenticated SSH connections, manual restoration, preservation of another nftables table, and systemd recovery after the main script is killed with SIGKILL. It is separate from `tests/test.sh` and refuses a non-VM or a system without systemd as PID 1.
+
+For actual service and audit checks, install vsftpd in that disposable VM and run:
+
+```bash
+sudo bash tests/live-audit-vm.sh --disposable-vm
+```
+
+This temporarily changes vsftpd configuration and applies/restores SSH and kernel hardening. It restores the original service configuration and removes its fixtures on exit.
+
+**Version 1.2.0 validation:** 160 isolated checks and 50 live checks passed. The live checks ran on an official Ubuntu 24.04.5 LTS image in a disposable QEMU VM with its own Linux kernel and systemd as PID 1. They cover IPv4/IPv6 TCP/UDP filtering, fresh authenticated SSH logins, manual restoration, systemd rollback after SIGKILL, real vsftpd anonymous access/rejection, SUID/key inventory, and SSH/kernel hardening restoration. Full module linting is clean. See [validation notes](docs/VALIDATION.md) and the [machine-readable results](docs/validation-ubuntu-24.04.json). Kali and other distributions have not received the same live validation in this release.
+
+## Maintaining the code
+
+- Edit the module responsible for the feature. Command names, option parsing, and help text belong in `lib/cli.sh`; shared paths and defaults belong in `lib/common.sh`.
+- Keep module imports limited to definitions and shared initialization. Start host changes inside a dispatched command after its preview and preflight checks.
+- Preserve the transaction order: capture backups, mark the run pending, apply changes, and clear the pending marker only after success. Recovery depends on those files and locks.
+- Keep the generated watchdog self-contained. It must be able to recover without importing the checkout.
+- Comments explain function responsibilities and the reasons behind ordering, validation, locks, and recovery. Update them with behavior changes, then run the tests and ShellCheck.
+- If adding a module, register it in the entry point's required-module list and explicit imports, then update the structure table and tests.
+
+## Publishing
 
 | File | Purpose |
 | --- | --- |
-| `ctf-defend.sh` | Main Bash script and built-in `--help` |
+| `ctf-defend.sh` and `lib/` | Entry point and all feature modules; publish these together |
 | `README.md` | Setup, examples, behavior, and recovery |
 | `tests/test.sh` | Isolated regression tests |
+| `tests/live-vm.py` | Explicitly opt-in disposable-VM validation |
+| `tests/live-audit-vm.sh` | Explicitly opt-in disposable-VM audit/service validation |
+| `docs/VALIDATION.md` | Verified environment, scenarios, and known limits |
+| `LICENSE` | MIT license, copyright 2026 Camilo Hernandez |
 | `.gitignore` | Excludes common reports, backups, and secrets |
 
-Create your GitHub repository and add these files. Keep audit reports, team passwords, VM backups, and private competition information outside the repository. No license is included; choose one if you want to grant reuse rights explicitly.
+Create your GitHub repository and add these files. Keep audit reports, team passwords, VM backups, and private competition information outside the repository.
+
+## License
+
+Released under the [MIT License](LICENSE). Copyright (c) 2026 Camilo Hernandez.
 
 ## Technical references
 
@@ -220,3 +319,5 @@ Create your GitHub repository and add these files. Keep audit reports, team pass
 - [nftables command manual](https://manpages.debian.org/bookworm/nftables/nft.8.en.html)
 - [systemd-run transient timers](https://www.freedesktop.org/software/systemd/man/latest/systemd-run.html)
 - [Linux kernel sysctl documentation](https://www.kernel.org/doc/html/latest/admin-guide/sysctl/index.html)
+- [curl command options](https://curl.se/docs/manpage.html)
+- [OpenSSH authorized-key format and permissions](https://man.openbsd.org/sshd)
